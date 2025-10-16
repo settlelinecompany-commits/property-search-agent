@@ -127,11 +127,97 @@
         }
         
         .ai-summary {
-            background: #e8f5e8;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 0;
+            border-radius: 12px;
+            border: 1px solid #dee2e6;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .agent-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             padding: 20px;
-            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .agent-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            margin: 0 0 5px 0;
+        }
+        
+        .agent-subtitle {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin: 0;
+        }
+        
+        .agent-content {
+            padding: 25px;
             line-height: 1.6;
-            border: 1px solid #4caf50;
+        }
+        
+        .property-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .property-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .property-name {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0 0 10px 0;
+        }
+        
+        .property-price {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #27ae60;
+            margin: 0 0 10px 0;
+        }
+        
+        .property-details {
+            color: #6c757d;
+            margin: 0 0 15px 0;
+        }
+        
+        .property-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: transform 0.2s ease;
+        }
+        
+        .property-link:hover {
+            transform: translateY(-1px);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .best-deal {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-left: 10px;
         }
         
         .loading {
@@ -299,8 +385,15 @@
             
             <!-- AI Summary Section (Moved to Top) -->
             <div id="summarySection" class="section hidden">
-                <h3>✨ AI Summary</h3>
-                <div id="aiSummary" class="ai-summary"></div>
+                <div class="ai-summary">
+                    <div class="agent-header">
+                        <div class="agent-title">🏠 Your Property Search Agent</div>
+                        <div class="agent-subtitle">Hi! I'm your AI property assistant. Here are the best matches I found for you:</div>
+                    </div>
+                    <div class="agent-content" id="aiSummary">
+                        <!-- AI content will be inserted here -->
+                    </div>
+                </div>
             </div>
             
             <!-- Generated URL Section -->
@@ -445,8 +538,9 @@
                     throw new Error(summaryData.error);
                 }
 
-                // Show AI summary
-                aiSummary.innerHTML = summaryData.summary.replace(/\n/g, '<br>');
+                // Show AI summary with enhanced formatting
+                const formattedSummary = formatAISummary(summaryData.summary);
+                aiSummary.innerHTML = formattedSummary;
                 summarySection.classList.remove('hidden');
 
             } catch (error) {
@@ -499,6 +593,43 @@
         function setQuery(query) {
             queryInput.value = query;
             queryInput.focus();
+        }
+        
+        // Function to format AI summary with enhanced styling
+        function formatAISummary(summary) {
+            // Convert markdown-style formatting to HTML
+            let formatted = summary
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold text
+                .replace(/\*(.*?)\*/g, '<em>$1</em>') // Italic text
+                .replace(/### (.*?)/g, '<h3 style="color: #2c3e50; margin: 20px 0 10px 0; font-size: 1.3em;">$1</h3>') // Headers
+                .replace(/## (.*?)/g, '<h2 style="color: #2c3e50; margin: 25px 0 15px 0; font-size: 1.5em;">$1</h2>') // Larger headers
+                .replace(/\n\n/g, '</p><p style="margin: 15px 0;">') // Paragraph breaks
+                .replace(/\n/g, '<br>'); // Line breaks
+            
+            // Wrap in paragraph tags
+            formatted = '<p style="margin: 0 0 15px 0;">' + formatted + '</p>';
+            
+            // Convert property links to styled buttons
+            formatted = formatted.replace(/\[View Property\]\((.*?)\)/g, 
+                '<a href="$1" class="property-link" target="_blank">View Property</a>');
+            
+            // Convert numbered lists to styled cards
+            formatted = formatted.replace(/(\d+\.\s*\*\*(.*?)\*\*)/g, 
+                '<div class="property-card"><div class="property-name">$2</div>');
+            
+            // Add best deal badges
+            formatted = formatted.replace(/\(best deal\)/g, 
+                '<span class="best-deal">BEST DEAL</span>');
+            
+            // Convert price formatting
+            formatted = formatted.replace(/\*\*Price:\*\* (.*?)(<br>|$)/g, 
+                '<div class="property-price">$1</div>');
+            
+            // Convert description formatting
+            formatted = formatted.replace(/\*\*Description:\*\* (.*?)(<br>|$)/g, 
+                '<div class="property-details">$1</div>');
+            
+            return formatted;
         }
     </script>
 </body>
