@@ -131,7 +131,7 @@ def summarize():
         raw_data = request.json.get('data', [])
         user_query = request.json.get('original_query', '')
         
-                   prompt = f"""
+        prompt = f"""
 You are a property rental assistant. Summarize the following scraped property data in a helpful, concise way for the user.
 
 IMPORTANT: Respond in the SAME LANGUAGE as the user's original query.
