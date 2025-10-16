@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "api/scrape.py": {
+      "runtime": "python3.9"
+    }
+  },
+  "builds": [
+    {
+      "src": "api/scrape.py",
+      "use": "@vercel/python"
+    }
+  ]
+}
