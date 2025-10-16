@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Search Agent</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .input-section {
+            padding: 30px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .input-field {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .search-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .search-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .search-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .results-section {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            background: #f8f9fa;
+        }
+        
+        .section h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 1.3em;
+        }
+        
+        .url-display {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            word-break: break-all;
+            border: 1px solid #bbdefb;
+        }
+        
+        .raw-results {
+            background: #fff3e0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            border: 1px solid #ffcc02;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .ai-summary {
+            background: #e8f5e8;
+            padding: 20px;
+            border-radius: 6px;
+            line-height: 1.6;
+            border: 1px solid #4caf50;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #ef5350;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏠 Property Search Agent</h1>
+            <p>Find your perfect rental property in the UAE</p>
+        </div>
+        
+        <div class="input-section">
+            <div class="input-group">
+                <input type="text" id="queryInput" class="input-field" 
+                       placeholder="e.g., 3BR apartment in Dubai Marina under 90k per year"
+                       value="3BR apartment in Dubai Marina under 90k per year">
+                <button id="searchBtn" class="search-btn">Search Properties</button>
+            </div>
+        </div>
+        
+        <div class="results-section">
+            <!-- Generated URL Section -->
+            <div id="urlSection" class="section hidden">
+                <h3>🔗 Generated Bayut URL</h3>
+                <div id="urlDisplay" class="url-display"></div>
+            </div>
+            
+            <!-- Raw Scraper Results Section -->
+            <div id="rawSection" class="section hidden">
+                <h3>📊 Raw Scraper Results</h3>
+                <div id="rawResults" class="raw-results"></div>
+            </div>
+            
+            <!-- AI Summary Section -->
+            <div id="summarySection" class="section hidden">
+                <h3>✨ AI Summary</h3>
+                <div id="aiSummary" class="ai-summary"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const searchBtn = document.getElementById('searchBtn');
+        const queryInput = document.getElementById('queryInput');
+        const urlSection = document.getElementById('urlSection');
+        const rawSection = document.getElementById('rawSection');
+        const summarySection = document.getElementById('summarySection');
+        const urlDisplay = document.getElementById('urlDisplay');
+        const rawResults = document.getElementById('rawResults');
+        const aiSummary = document.getElementById('aiSummary');
+
+        searchBtn.addEventListener('click', async () => {
+            const query = queryInput.value.trim();
+            if (!query) return;
+
+            // Reset UI
+            searchBtn.disabled = true;
+            searchBtn.innerHTML = '<div class="spinner"></div>Searching...';
+            hideAllSections();
+
+            try {
+                // Step 1: Parse query and generate URL
+                showLoading(urlSection, 'Generating Bayut URL...');
+                const parseResponse = await fetch('/parse-query', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+                const parseData = await parseResponse.json();
+
+                if (!parseData.success) {
+                    throw new Error(parseData.error);
+                }
+
+                // Show generated URL
+                urlDisplay.textContent = parseData.data.url;
+                urlSection.classList.remove('hidden');
+
+                // Step 2: Scrape properties
+                showLoading(rawSection, 'Scraping properties...');
+                const scrapeResponse = await fetch('/scrape', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: parseData.data.url })
+                });
+                const scrapeData = await scrapeResponse.json();
+
+                if (!scrapeData.success) {
+                    throw new Error(scrapeData.error);
+                }
+
+                // Show raw results
+                rawResults.textContent = JSON.stringify(scrapeData.data, null, 2);
+                rawSection.classList.remove('hidden');
+
+                // Step 3: Generate AI summary
+                showLoading(summarySection, 'Generating AI summary...');
+                const summaryResponse = await fetch('/summarize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        data: scrapeData.data,
+                        original_query: query
+                    })
+                });
+                const summaryData = await summaryResponse.json();
+
+                if (!summaryData.success) {
+                    throw new Error(summaryData.error);
+                }
+
+                // Show AI summary
+                aiSummary.innerHTML = summaryData.summary.replace(/\n/g, '<br>');
+                summarySection.classList.remove('hidden');
+
+            } catch (error) {
+                console.error('Error:', error);
+                showError(error.message);
+            } finally {
+                searchBtn.disabled = false;
+                searchBtn.textContent = 'Search Properties';
+            }
+        });
+
+        function hideAllSections() {
+            urlSection.classList.add('hidden');
+            rawSection.classList.add('hidden');
+            summarySection.classList.add('hidden');
+        }
+
+        function showLoading(section, message) {
+            section.classList.remove('hidden');
+            const content = section.querySelector('div:last-child');
+            content.innerHTML = `<div class="loading"><div class="spinner"></div>${message}</div>`;
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = `Error: ${message}`;
+            
+            // Insert error at the top of results
+            const resultsSection = document.querySelector('.results-section');
+            resultsSection.insertBefore(errorDiv, resultsSection.firstChild);
+            
+            // Remove error after 5 seconds
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
+
+        // Allow Enter key to trigger search
+        queryInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchBtn.click();
+            }
+        });
+    </script>
+</body>
+</html>
