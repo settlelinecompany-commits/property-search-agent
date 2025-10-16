@@ -131,8 +131,10 @@ def summarize():
         raw_data = request.json.get('data', [])
         user_query = request.json.get('original_query', '')
         
-        prompt = f"""
+                   prompt = f"""
 You are a property rental assistant. Summarize the following scraped property data in a helpful, concise way for the user.
+
+IMPORTANT: Respond in the SAME LANGUAGE as the user's original query.
 
 Original User Query: {user_query}
 
@@ -144,7 +146,7 @@ Please provide:
 2. Key highlights (best deals, locations, etc.)
 3. Direct links to each property for the user to view/rent
 
-Format your response as a clean, user-friendly summary with clickable property links.
+Format your response as a clean, user-friendly summary with clickable property links in the same language as the user's query.
 """
 
         response = openai.ChatCompletion.create(
