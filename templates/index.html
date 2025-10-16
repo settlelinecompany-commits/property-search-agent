@@ -533,23 +533,28 @@
                     })
                 });
                 const summaryData = await summaryResponse.json();
+                console.log('Summary data received:', summaryData);
 
                 if (!summaryData.success) {
                     throw new Error(summaryData.error);
                 }
 
                 // Show AI summary with simple formatting
+                console.log('Setting AI summary content...');
                 aiSummary.innerHTML = summaryData.summary.replace(/\n/g, '<br>');
                 summarySection.classList.remove('hidden');
+                console.log('AI summary section shown');
 
             } catch (error) {
                 console.error('Error:', error);
                 showError(error.message);
                 stopLoading();
             } finally {
+                console.log('Finally block - stopping loading animation');
                 searchBtn.disabled = false;
                 searchBtn.textContent = 'Search Properties';
                 stopLoading();
+                console.log('Loading animation stopped');
             }
         });
 
