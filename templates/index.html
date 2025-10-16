@@ -127,97 +127,11 @@
         }
         
         .ai-summary {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 0;
-            border-radius: 12px;
-            border: 1px solid #dee2e6;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .agent-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: #e8f5e8;
             padding: 20px;
-            text-align: center;
-        }
-        
-        .agent-title {
-            font-size: 1.4em;
-            font-weight: 600;
-            margin: 0 0 5px 0;
-        }
-        
-        .agent-subtitle {
-            font-size: 0.9em;
-            opacity: 0.9;
-            margin: 0;
-        }
-        
-        .agent-content {
-            padding: 25px;
-            line-height: 1.6;
-        }
-        
-        .property-card {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 15px 0;
-            border: 1px solid #e9ecef;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        
-        .property-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        
-        .property-name {
-            font-size: 1.2em;
-            font-weight: 600;
-            color: #2c3e50;
-            margin: 0 0 10px 0;
-        }
-        
-        .property-price {
-            font-size: 1.1em;
-            font-weight: 600;
-            color: #27ae60;
-            margin: 0 0 10px 0;
-        }
-        
-        .property-details {
-            color: #6c757d;
-            margin: 0 0 15px 0;
-        }
-        
-        .property-link {
-            display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 8px 16px;
             border-radius: 6px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: transform 0.2s ease;
-        }
-        
-        .property-link:hover {
-            transform: translateY(-1px);
-            color: white;
-            text-decoration: none;
-        }
-        
-        .best-deal {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.8em;
-            font-weight: 600;
-            margin-left: 10px;
+            line-height: 1.6;
+            border: 1px solid #4caf50;
         }
         
         .loading {
@@ -385,15 +299,8 @@
             
             <!-- AI Summary Section (Moved to Top) -->
             <div id="summarySection" class="section hidden">
-                <div class="ai-summary">
-                    <div class="agent-header">
-                        <div class="agent-title">🏠 Your Property Search Agent</div>
-                        <div class="agent-subtitle">Hi! I'm your AI property assistant. Here are the best matches I found for you:</div>
-                    </div>
-                    <div class="agent-content" id="aiSummary">
-                        <!-- AI content will be inserted here -->
-                    </div>
-                </div>
+                <h3>✨ AI Summary</h3>
+                <div id="aiSummary" class="ai-summary"></div>
             </div>
             
             <!-- Generated URL Section -->
@@ -533,28 +440,23 @@
                     })
                 });
                 const summaryData = await summaryResponse.json();
-                console.log('Summary data received:', summaryData);
 
                 if (!summaryData.success) {
                     throw new Error(summaryData.error);
                 }
 
-                // Show AI summary with simple formatting
-                console.log('Setting AI summary content...');
+                // Show AI summary
                 aiSummary.innerHTML = summaryData.summary.replace(/\n/g, '<br>');
                 summarySection.classList.remove('hidden');
-                console.log('AI summary section shown');
 
             } catch (error) {
                 console.error('Error:', error);
                 showError(error.message);
                 stopLoading();
             } finally {
-                console.log('Finally block - stopping loading animation');
                 searchBtn.disabled = false;
                 searchBtn.textContent = 'Search Properties';
                 stopLoading();
-                console.log('Loading animation stopped');
             }
         });
 
