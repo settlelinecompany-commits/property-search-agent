@@ -26,52 +26,31 @@ def parse_query():
         
         # OpenAI prompt for URL generation
         prompt = f"""
-You are an information-extraction and URL-construction agent for UAE rental searches on Bayut. Your job is to:
-Parse a natural-language rental query into a strict JSON object.
-Normalize beds/baths, price, and rent frequency.
-Construct a valid Bayut rent URL from that JSON.
-Return only a final JSON object with both the parsed fields and the URL.
+Convert this rental query to a complete Bayut URL: "{user_query}"
 
-SCOPE (RENTAL ONLY)
-Handle rent cases only (no buy/sale).
-Ignore furnishing/amenities/parking/pets unless they influence price or frequency. Do not include them in output.
-Work with Dubai/UAE locations in free text, but URL path remains /uae/ (location filtering handled downstream).
+Use this format:
+https://www.bayut.com/to-rent/{{beds}}-{{property_type}}/{{location}}/{{area}}/?rent_frequency={{freq}}&price_min={{min}}&price_max={{max}}&baths_in={{baths}}
 
-OUTPUT FORMAT (STRICT)
-Return exactly one JSON object with these keys (and nothing else):
-{{
-  "parsed": {{
-    "intent": "rent",
-    "locations": ["<string>", "..."],            // default ["UAE"]
-    "property_type": "apartment|villa|townhouse|penthouse|hotel_apartment|villa_compound|land|building|floor",
-    "beds": "studio|1|2|3|4|5|6|7|8+|any",
-    "baths": "1|2|3|4|5|6+|any",
-    "rent_frequency": "yearly|monthly|weekly|daily|any",
-    "price_min_aed": 0,
-    "price_max_aed": 0,
-    "raw_query": "<the original user text>"
-  }},
-  "url": "<final bayut url>"
-}}
+Examples:
+"3BR apartment in Dubai Marina under 90k monthly"
+→ https://www.bayut.com/to-rent/3-bedroom-apartments/dubai/dubai-marina/?rent_frequency=monthly&price_max=90000
 
-DEFAULTS (WHEN MISSING OR AMBIGUOUS)
-intent: "rent" (fixed)
-locations: ["UAE"]
-property_type: "apartment"
-beds: "any"
-baths: "any"
-rent_frequency: "yearly" (unless text clearly implies monthly/weekly/daily; if user says "either/any", set "any")
-price_min_aed / price_max_aed: 0 (omit from URL when zero)
+"2BR villa in Downtown Dubai 5k-15k monthly with 2 baths"
+→ https://www.bayut.com/to-rent/2-bedroom-villas/dubai/downtown-dubai/?rent_frequency=monthly&price_min=5000&price_max=15000&baths_in=2
 
-User Query: {user_query}
+"Studio in JVC around 5k monthly"
+→ https://www.bayut.com/to-rent/studio-apartments/dubai/jumeirah-village-circle/?rent_frequency=monthly&price_max=5000
 
-Return only the JSON object:
+"Villa in Abu Dhabi under 150k yearly"
+→ https://www.bayut.com/to-rent/villas/abu-dhabi/abu-dhabi-city/?rent_frequency=yearly&price_max=150000
+
+Return ONLY the complete Bayut URL with all relevant parameters.
 """
 
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "You are a URL construction agent for Bayut property searches. Return only valid JSON."},
+                {"role": "system", "content": "You are a URL construction agent for Bayut property searches. Return only the URL."},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.1
@@ -79,19 +58,21 @@ Return only the JSON object:
         
         result = response.choices[0].message.content.strip()
         
-        # Try to parse the JSON response
-        try:
-            parsed_result = json.loads(result)
-            return jsonify({
-                'success': True,
-                'data': parsed_result
-            })
-        except json.JSONDecodeError:
-            return jsonify({
-                'success': False,
-                'error': 'Failed to parse OpenAI response as JSON',
-                'raw_response': result
-            })
+        # Extract URL from response
+        if result.startswith('http'):
+            url = result.split('\n')[0].strip()
+        else:
+            import re
+            url_match = re.search(r'https://[^\s]+', result)
+            url = url_match.group(0) if url_match else result
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'url': url,
+                'raw_query': user_query
+            }
+        })
             
     except Exception as e:
         return jsonify({
@@ -146,7 +127,7 @@ Format your response as a clean, user-friendly summary with clickable property l
 """
 
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are a helpful property rental assistant. Provide clear, concise summaries with actionable information."},
                 {"role": "user", "content": prompt}
