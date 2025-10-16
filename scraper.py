@@ -2,6 +2,9 @@ from playwright.sync_api import sync_playwright
 
 def scrape_bayut_url(url):
     """Scrape Bayut properties from a given URL"""
+    print(f"🔍 DEBUG: Scraper received URL: {url}")
+    print(f"🔍 DEBUG: Starting Playwright...")
+    
     pw = sync_playwright().start()
     
     browser = pw.firefox.launch(
@@ -10,12 +13,16 @@ def scrape_bayut_url(url):
     )
     
     page = browser.new_page()
+    print(f"🔍 DEBUG: Navigating to: {url}")
     page.goto(url)
+    print(f"🔍 DEBUG: Page loaded successfully")
     
     # Get all the links and extract unique URLs in one go
+    print(f"🔍 DEBUG: Looking for property links...")
     links = page.locator("xpath=//a[contains(@href, 'property/details') and not(ancestor::div[@aria-label='Recommended search hits'])]").all()
     
     urls = list(set(link.get_attribute("href") for link in links if link.get_attribute("href")))
+    print(f"🔍 DEBUG: Found {len(urls)} property links")
     
     results = []
     
@@ -58,6 +65,7 @@ def scrape_bayut_url(url):
     browser.close()
     pw.stop()
     
+    print(f"🔍 DEBUG: Scraper completed, returning {len(results)} results")
     return results
 
 # Keep the original script functionality for direct execution

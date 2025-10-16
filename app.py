@@ -66,6 +66,10 @@ Return ONLY the complete Bayut URL with all relevant parameters.
             url_match = re.search(r'https://[^\s]+', result)
             url = url_match.group(0) if url_match else result
         
+        # Debug logging
+        print(f"🔍 DEBUG: Generated URL: {url}")
+        print(f"🔍 DEBUG: URL length: {len(url)}")
+        
         return jsonify({
             'success': True,
             'data': {
@@ -86,11 +90,27 @@ def scrape():
     try:
         url = request.json.get('url', '')
         
+        # Debug logging
+        print(f"🔍 DEBUG: Received URL: {url}")
+        print(f"🔍 DEBUG: URL length: {len(url)}")
+        print(f"🔍 DEBUG: URL type: {type(url)}")
+        print(f"🔍 DEBUG: Request JSON: {request.json}")
+        
+        if not url:
+            return jsonify({
+                'success': False,
+                'error': 'No URL provided to scraper'
+            })
+        
         # Import and run the existing scraper
         from scraper import scrape_bayut_url
         
+        print(f"🔍 DEBUG: Calling scraper with URL: {url}")
+        
         # Call the scraper function with the URL
         results = scrape_bayut_url(url)
+        
+        print(f"🔍 DEBUG: Scraper returned {len(results)} results")
         
         return jsonify({
             'success': True,
@@ -98,6 +118,7 @@ def scrape():
         })
         
     except Exception as e:
+        print(f"🔍 DEBUG: Error in scraper: {str(e)}")
         return jsonify({
             'success': False,
             'error': str(e)
