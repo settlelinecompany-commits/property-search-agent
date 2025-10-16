@@ -39,7 +39,7 @@ Examples:
 → https://www.bayut.com/to-rent/2-bedroom-villas/dubai/downtown-dubai/?rent_frequency=monthly&price_min=5000&price_max=15000&baths_in=2
 
 "Studio in JVC around 5k monthly"
-→ https://www.bayut.com/to-rent/studio-apartments/dubai/jumeirah-village-circle/?rent_frequency=monthly&price_max=5000
+→ https://www.bayut.com/to-rent/studio-apartments/dubai/jumeirah-village-circle-jvc/?rent_frequency=monthly&price_max=5000
 
 "Villa in Abu Dhabi under 150k yearly"
 → https://www.bayut.com/to-rent/villas/abu-dhabi/abu-dhabi-city/?rent_frequency=yearly&price_max=150000

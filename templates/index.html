@@ -223,6 +223,42 @@
             opacity: 0.8;
             margin-top: 10px;
         }
+        
+        .sample-prompts {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .sample-prompts h4 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 1.1em;
+        }
+        
+        .prompt-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .prompt-btn {
+            padding: 8px 16px;
+            background: white;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .prompt-btn:hover {
+            border-color: #667eea;
+            background: #f0f2ff;
+            transform: translateY(-1px);
+        }
     </style>
 </head>
 <body>
@@ -235,9 +271,19 @@
         <div class="input-section">
             <div class="input-group">
                 <input type="text" id="queryInput" class="input-field" 
-                       placeholder="e.g., 3BR apartment in Dubai Marina under 90k per year"
-                       value="3BR apartment in Dubai Marina under 90k per year">
+                       placeholder="e.g., 1BR apartment in Dubai Marina under 90k per year"
+                       value="1BR apartment in Dubai Marina under 90k per year">
                 <button id="searchBtn" class="search-btn">Search Properties</button>
+            </div>
+            
+            <div class="sample-prompts">
+                <h4>💡 Try these examples:</h4>
+                <div class="prompt-buttons">
+                    <button class="prompt-btn" onclick="setQuery('1BR apartment in Dubai Marina under 90k monthly')">1BR in Dubai Marina</button>
+                    <button class="prompt-btn" onclick="setQuery('Studio in JVC around 5k monthly')">Studio in JVC</button>
+                    <button class="prompt-btn" onclick="setQuery('2BR villa in Downtown Dubai under 150k yearly')">2BR Villa Downtown</button>
+                    <button class="prompt-btn" onclick="setQuery('Penthouse in Palm Jumeirah under 200k yearly')">Penthouse Palm Jumeirah</button>
+                </div>
             </div>
         </div>
         
@@ -448,6 +494,12 @@
                 searchBtn.click();
             }
         });
+        
+        // Function to set query from sample prompts
+        function setQuery(query) {
+            queryInput.value = query;
+            queryInput.focus();
+        }
     </script>
 </body>
 </html>
