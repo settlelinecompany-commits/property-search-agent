@@ -167,6 +167,62 @@
         .hidden {
             display: none;
         }
+        
+        .loading-bar-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 30px;
+            margin: 20px 0;
+            color: white;
+            text-align: center;
+        }
+        
+        .loading-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .loading-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A, #CDDC39);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+        
+        .loading-progress::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .loading-message {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin: 10px 0;
+            min-height: 1.5em;
+        }
+        
+        .loading-subtitle {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -186,6 +242,21 @@
         </div>
         
         <div class="results-section">
+            <!-- Loading Bar -->
+            <div id="loadingSection" class="loading-bar-container hidden">
+                <div class="loading-message" id="loadingMessage">🚀 Starting your property search...</div>
+                <div class="loading-bar">
+                    <div class="loading-progress" id="loadingProgress"></div>
+                </div>
+                <div class="loading-subtitle" id="loadingSubtitle">This may take up to 35 seconds</div>
+            </div>
+            
+            <!-- AI Summary Section (Moved to Top) -->
+            <div id="summarySection" class="section hidden">
+                <h3>✨ AI Summary</h3>
+                <div id="aiSummary" class="ai-summary"></div>
+            </div>
+            
             <!-- Generated URL Section -->
             <div id="urlSection" class="section hidden">
                 <h3>🔗 Generated Bayut URL</h3>
@@ -197,24 +268,73 @@
                 <h3>📊 Raw Scraper Results</h3>
                 <div id="rawResults" class="raw-results"></div>
             </div>
-            
-            <!-- AI Summary Section -->
-            <div id="summarySection" class="section hidden">
-                <h3>✨ AI Summary</h3>
-                <div id="aiSummary" class="ai-summary"></div>
-            </div>
         </div>
     </div>
 
     <script>
         const searchBtn = document.getElementById('searchBtn');
         const queryInput = document.getElementById('queryInput');
+        const loadingSection = document.getElementById('loadingSection');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const loadingProgress = document.getElementById('loadingProgress');
+        const loadingSubtitle = document.getElementById('loadingSubtitle');
         const urlSection = document.getElementById('urlSection');
         const rawSection = document.getElementById('rawSection');
         const summarySection = document.getElementById('summarySection');
         const urlDisplay = document.getElementById('urlDisplay');
         const rawResults = document.getElementById('rawResults');
         const aiSummary = document.getElementById('aiSummary');
+
+        // Cool loading messages
+        const loadingMessages = [
+            { message: "🚀 Starting your property search...", progress: 5 },
+            { message: "🧠 AI is analyzing your query...", progress: 15 },
+            { message: "🔗 Generating perfect Bayut URL...", progress: 25 },
+            { message: "🕷️ Launching web scraper...", progress: 35 },
+            { message: "🏠 Searching for properties...", progress: 50 },
+            { message: "📊 Extracting property details...", progress: 70 },
+            { message: "✨ AI is crafting your summary...", progress: 85 },
+            { message: "🎉 Almost done! Finalizing results...", progress: 95 }
+        ];
+
+        function startLoadingAnimation() {
+            loadingSection.classList.remove('hidden');
+            let currentMessageIndex = 0;
+            let progress = 0;
+            
+            const updateLoading = () => {
+                if (currentMessageIndex < loadingMessages.length) {
+                    const current = loadingMessages[currentMessageIndex];
+                    loadingMessage.textContent = current.message;
+                    loadingProgress.style.width = current.progress + '%';
+                    currentMessageIndex++;
+                } else if (progress < 100) {
+                    progress += 0.5;
+                    loadingProgress.style.width = progress + '%';
+                }
+            };
+            
+            // Update every 4 seconds for messages, then smooth progress
+            const messageInterval = setInterval(updateLoading, 4000);
+            
+            // Smooth progress animation
+            const progressInterval = setInterval(() => {
+                if (currentMessageIndex >= loadingMessages.length && progress < 100) {
+                    progress += 0.5;
+                    loadingProgress.style.width = progress + '%';
+                }
+            }, 50);
+            
+            return () => {
+                clearInterval(messageInterval);
+                clearInterval(progressInterval);
+                loadingProgress.style.width = '100%';
+                loadingMessage.textContent = "🎉 Search complete!";
+                setTimeout(() => {
+                    loadingSection.classList.add('hidden');
+                }, 1000);
+            };
+        }
 
         searchBtn.addEventListener('click', async () => {
             const query = queryInput.value.trim();
@@ -224,6 +344,9 @@
             searchBtn.disabled = true;
             searchBtn.innerHTML = '<div class="spinner"></div>Searching...';
             hideAllSections();
+            
+            // Start cool loading animation
+            const stopLoading = startLoadingAnimation();
 
             try {
                 // Step 1: Parse query and generate URL
@@ -283,13 +406,16 @@
             } catch (error) {
                 console.error('Error:', error);
                 showError(error.message);
+                stopLoading();
             } finally {
                 searchBtn.disabled = false;
                 searchBtn.textContent = 'Search Properties';
+                stopLoading();
             }
         });
 
         function hideAllSections() {
+            loadingSection.classList.add('hidden');
             urlSection.classList.add('hidden');
             rawSection.classList.add('hidden');
             summarySection.classList.add('hidden');
