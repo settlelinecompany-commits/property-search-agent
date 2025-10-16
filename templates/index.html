@@ -538,9 +538,8 @@
                     throw new Error(summaryData.error);
                 }
 
-                // Show AI summary with enhanced formatting
-                const formattedSummary = formatAISummary(summaryData.summary);
-                aiSummary.innerHTML = formattedSummary;
+                // Show AI summary with simple formatting
+                aiSummary.innerHTML = summaryData.summary.replace(/\n/g, '<br>');
                 summarySection.classList.remove('hidden');
 
             } catch (error) {
@@ -595,42 +594,6 @@
             queryInput.focus();
         }
         
-        // Function to format AI summary with enhanced styling
-        function formatAISummary(summary) {
-            // Convert markdown-style formatting to HTML
-            let formatted = summary
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold text
-                .replace(/\*(.*?)\*/g, '<em>$1</em>') // Italic text
-                .replace(/### (.*?)/g, '<h3 style="color: #2c3e50; margin: 20px 0 10px 0; font-size: 1.3em;">$1</h3>') // Headers
-                .replace(/## (.*?)/g, '<h2 style="color: #2c3e50; margin: 25px 0 15px 0; font-size: 1.5em;">$1</h2>') // Larger headers
-                .replace(/\n\n/g, '</p><p style="margin: 15px 0;">') // Paragraph breaks
-                .replace(/\n/g, '<br>'); // Line breaks
-            
-            // Wrap in paragraph tags
-            formatted = '<p style="margin: 0 0 15px 0;">' + formatted + '</p>';
-            
-            // Convert property links to styled buttons
-            formatted = formatted.replace(/\[View Property\]\((.*?)\)/g, 
-                '<a href="$1" class="property-link" target="_blank">View Property</a>');
-            
-            // Convert numbered lists to styled cards
-            formatted = formatted.replace(/(\d+\.\s*\*\*(.*?)\*\*)/g, 
-                '<div class="property-card"><div class="property-name">$2</div>');
-            
-            // Add best deal badges
-            formatted = formatted.replace(/\(best deal\)/g, 
-                '<span class="best-deal">BEST DEAL</span>');
-            
-            // Convert price formatting
-            formatted = formatted.replace(/\*\*Price:\*\* (.*?)(<br>|$)/g, 
-                '<div class="property-price">$1</div>');
-            
-            // Convert description formatting
-            formatted = formatted.replace(/\*\*Description:\*\* (.*?)(<br>|$)/g, 
-                '<div class="property-details">$1</div>');
-            
-            return formatted;
-        }
     </script>
 </body>
 </html>
